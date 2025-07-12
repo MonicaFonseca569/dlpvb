@@ -127,15 +127,28 @@ export default function ResultsSidebar({ onNotification }: ResultsSidebarProps) 
               Recent Downloads
             </h2>
             {downloads.length > 0 && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => clearAllMutation.mutate()}
-                disabled={clearAllMutation.isPending}
-                className="text-primary hover:text-blue-600 text-sm font-medium"
-              >
-                Clear All
-              </Button>
+              <div className="flex space-x-2">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    const failedDownloads = downloads.filter(d => d.status === 'failed');
+                    failedDownloads.forEach(download => deleteDownloadMutation.mutate(download.id));
+                  }}
+                  className="text-error hover:text-red-600 text-sm font-medium"
+                >
+                  Limpar Falhas
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => clearAllMutation.mutate()}
+                  disabled={clearAllMutation.isPending}
+                  className="text-primary hover:text-blue-600 text-sm font-medium"
+                >
+                  Limpar Tudo
+                </Button>
+              </div>
             )}
           </div>
           

@@ -105,3 +105,23 @@ Preferred communication style: Simple, everyday language.
 - **Build Optimization**: Separate client/server build processes with external package handling
 
 The application follows a modern full-stack architecture with real-time capabilities, designed for scalability and maintainability. The separation of concerns between frontend UI state, backend API logic, and database persistence provides a clean foundation for feature development.
+
+## Recent Changes
+
+### 2025-01-12 - Sistema de Download de Vídeos Implementado
+- ✓ Criada aplicação web de download de vídeos inspirada no Tartube
+- ✓ Três funcionalidades principais: download, parar download, ver resultados
+- ✓ Sistema de validação de URLs em tempo real com yt-dlp
+- ✓ Interface responsiva com componentes modernos (shadcn/ui)
+- ✓ Monitoramento de progresso via polling (2s intervals)
+- ✓ Tratamento de erros específicos (403, vídeo indisponível, restrição de idade)
+- ✓ Botões para limpar downloads falhados e histórico completo
+- ✓ Notificações visuais para feedback do usuário
+- ✓ Suporte para YouTube, Vimeo, Dailymotion, Twitch
+
+### Problemas Resolvidos
+- ✓ Corrigidos erros de WebSocket que causavam falhas no servidor
+- ✓ Implementado polling como alternativa estável ao WebSocket
+- ✓ Melhorado tratamento de erros HTTP 403 do YouTube
+- ✓ Adicionado endpoint de teste de URL para validação prévia
+- ✓ Corrigidos problemas de tipos TypeScript no sistema de storage

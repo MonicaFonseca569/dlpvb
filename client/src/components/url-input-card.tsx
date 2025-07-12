@@ -18,7 +18,7 @@ interface URLInputCardProps {
 export default function URLInputCard({ onNotification, url, setUrl, quality, setQuality, format, setFormat }: URLInputCardProps) {
   const [urlStatus, setUrlStatus] = useState<'idle' | 'validating' | 'valid' | 'invalid'>('idle');
 
-  const validateUrl = (inputUrl: string) => {
+  const validateUrl = async (inputUrl: string) => {
     if (!inputUrl.trim()) {
       setUrlStatus('idle');
       return;
@@ -26,27 +26,42 @@ export default function URLInputCard({ onNotification, url, setUrl, quality, set
 
     setUrlStatus('validating');
     
-    // Simple URL validation for video platforms
-    const videoUrlPatterns = [
-      /^https?:\/\/(www\.)?(youtube\.com|youtu\.be)/,
-      /^https?:\/\/(www\.)?vimeo\.com/,
-      /^https?:\/\/(www\.)?dailymotion\.com/,
-      /^https?:\/\/(www\.)?twitch\.tv/,
-      /^https?:\/\/(www\.)?facebook\.com/,
-      /^https?:\/\/(www\.)?instagram\.com/,
-      /^https?:\/\/(www\.)?tiktok\.com/,
-    ];
-
-    const isValid = videoUrlPatterns.some(pattern => pattern.test(inputUrl));
-    
-    setTimeout(() => {
-      setUrlStatus(isValid ? 'valid' : 'invalid');
-      if (isValid) {
-        onNotification('success', 'Valid video URL detected');
-      } else if (inputUrl.trim()) {
-        onNotification('warning', 'URL may not be supported', 'Please check the URL format');
+    try {
+      const response = await fetch('/api/test-url', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ url: inputUrl }),
+      });
+      
+      const result = await response.json();
+      
+      if (result.success) {
+        setUrlStatus('valid');
+        onNotification('success', 'URL válida!', `${result.title} - ${result.duration}`);
+      } else {
+        setUrlStatus('invalid');
+        onNotification('error', 'URL inválida', result.message || 'Não foi possível acessar o vídeo');
       }
-    }, 500);
+    } catch (error) {
+      // Fallback to simple pattern matching if server test fails
+      const videoUrlPatterns = [
+        /^https?:\/\/(www\.)?(youtube\.com|youtu\.be)/,
+        /^https?:\/\/(www\.)?vimeo\.com/,
+        /^https?:\/\/(www\.)?dailymotion\.com/,
+        /^https?:\/\/(www\.)?twitch\.tv/,
+      ];
+
+      const isValid = videoUrlPatterns.some(pattern => pattern.test(inputUrl));
+      setUrlStatus(isValid ? 'valid' : 'invalid');
+      
+      if (isValid) {
+        onNotification('warning', 'URL detectada', 'Não foi possível verificar se está disponível');
+      } else {
+        onNotification('error', 'URL não suportada', 'Formato de URL não reconhecido');
+      }
+    }
   };
 
   const clearUrl = () => {
@@ -90,10 +105,24 @@ export default function URLInputCard({ onNotification, url, setUrl, quality, set
           </div>
           
           {/* URL Validation Indicator */}
+          {urlStatus === 'validating' && (
+            <div className="flex items-center space-x-2 text-sm">
+              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
+              <span className="text-primary">Verificando URL...</span>
+            </div>
+          )}
+          
           {urlStatus === 'valid' && (
             <div className="flex items-center space-x-2 text-sm">
               <CheckCircle className="text-success" size={16} />
-              <span className="text-success">Valid video URL detected</span>
+              <span className="text-success">URL válida e disponível</span>
+            </div>
+          )}
+          
+          {urlStatus === 'invalid' && (
+            <div className="flex items-center space-x-2 text-sm">
+              <X className="text-error" size={16} />
+              <span className="text-error">URL inválida ou indisponível</span>
             </div>
           )}
 
